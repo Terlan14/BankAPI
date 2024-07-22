@@ -32,24 +32,22 @@ public class TransferService {
 	@Autowired
 	UserBankAccountService userBankAccountService;
 
-	public void transferBetweenUserAccounts(User user, Long fromAccountId, Long toAccountId,Double amount) throws InsufficientBalanceException, UserNotFoundException {
+	public void transferBetweenUserAccounts(User user, Long senderAccountId, Long receiverAccountId,Double amount) throws InsufficientBalanceException, UserNotFoundException {
 		// TODO Auto-generated method stub
-		Optional<BankAccount>fromAccountOpt=bankAccountRepository.findByUserAndId(user, fromAccountId);
-		Optional<BankAccount>toAccountOpt=bankAccountRepository.findByUserAndId(user, toAccountId);
-		
-		if(fromAccountOpt.isPresent()) {
-			BankAccount fromAccount = fromAccountOpt.get();
-            BankAccount toAccount = toAccountOpt.get();
-            if(fromAccount.getStatus()==Status.ACTIVE && toAccount.getStatus()==Status.ACTIVE) {
-            	if (fromAccount.getBalance() >= amount) {
-                    fromAccount.setBalance(fromAccount.getBalance() - amount);
-                    toAccount.setBalance(toAccount.getBalance() + amount);
-                    bankAccountRepository.save(fromAccount);
-                    bankAccountRepository.save(toAccount);
+		BankAccount senderAccount = bankAccountRepository.findByUserAndId(user,senderAccountId)
+                .orElseThrow(() -> new AccountNotFoundException ("Sender account not found"));
+        BankAccount receiverAccount = bankAccountRepository.findByUserAndId(user,receiverAccountId)
+                .orElseThrow(() -> new AccountNotFoundException ("Receiver account not found"));
+            if(senderAccount.getStatus()==Status.ACTIVE && receiverAccount.getStatus()==Status.ACTIVE) {
+            	if (senderAccount.getBalance() >= amount) {
+            		senderAccount.setBalance(senderAccount.getBalance() - amount);
+            		receiverAccount.setBalance(receiverAccount.getBalance() + amount);
+                    bankAccountRepository.save(receiverAccount);
+                    bankAccountRepository.save(receiverAccount);
                     Transfer transfer=new Transfer();
                     transfer.setAmount(amount);
-                    transfer.setFromAccount(fromAccount);
-                    transfer.setToAccount(toAccount);
+                    transfer.setFromAccount(senderAccount);
+                    transfer.setToAccount(receiverAccount);
                     transfer.setTimeStamp(LocalDateTime.now());
                     transferRepository.save(transfer);
                     
@@ -63,10 +61,8 @@ public class TransferService {
                 throw new AccountDeactiveException("Both accounts must be active to perform the transfer.");
             }
 		
-	}
-		else {
-            throw new UserNotFoundException("One or both accounts do not exist.");
-        }
+	
+		
 
 }
 
@@ -92,15 +88,16 @@ public class TransferService {
         BankAccount receiverAccount = bankAccountRepository.findById(receiverAccountId)
                 .orElseThrow(() -> new AccountNotFoundException ("Receiver account not found"));
 		
+        if(senderAccount.getStatus()!=Status.ACTIVE || receiverAccount.getStatus()!=Status.ACTIVE ) {
+        	throw new AccountDeactiveException("Both account should be active");
+        	
+        }
 			
         if (senderAccount.getBalance() < amount) {
             throw new InsufficientBalanceException("Insufficient balance for the transfer");
         }
 
-        if(senderAccount.getStatus()!=Status.ACTIVE || receiverAccount.getStatus()!=Status.ACTIVE ) {
-        	throw new AccountDeactiveException("Both account should be active");
-        	
-        }
+        
         else {
         	 senderAccount.setBalance(senderAccount.getBalance()-amount);
              receiverAccount.setBalance(receiverAccount.getBalance()+amount);
@@ -116,9 +113,17 @@ public class TransferService {
              transferRepository.save(transfer);
         	
         }
+      
        
 		
 		
 	}
+		public void deleteTransfer(Long id) throws Exception {
+			Transfer transfer=transferRepository.getById(id);
+			if(transfer==null) {
+				throw new Exception("Transfer not found");
+			}
+			transferRepository.deleteById(id);
+		}
 	
 }

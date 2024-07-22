@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.atashgah.exception.AccountDeactiveException;
+import com.atashgah.exception.AccountNotFoundException;
 import com.atashgah.model.BankAccount;
 import com.atashgah.model.BankAccount.Status;
 import com.atashgah.model.User;
@@ -20,8 +22,10 @@ public class UserBankAccountService {
 	public List<BankAccount> getUserBankAccounts(User user) {
         return bankAccountRepository.findByUser(user);
     }
-	public Optional<BankAccount> getUserSpecificBankAccount(User user, Long accountId) {
-        return bankAccountRepository.findByUserAndId(user, accountId);
+	public Optional<BankAccount> getUserSpecificBankAccount(User user, Long accountId) throws Exception {
+		BankAccount account = bankAccountRepository.findByUserAndId(user,accountId)
+                .orElseThrow(() -> new AccountNotFoundException ("Account not found for specific user "+user.getPin()));
+        return Optional.of(account);
     }
 	public BankAccount addBankAccount(User user, BankAccount bankAccount) {
 		// TODO Auto-generated method stub
@@ -36,15 +40,17 @@ public class UserBankAccountService {
         bankAccountOptional.ifPresent(bankAccountRepository::delete);
 		
 	}
-	public BankAccount setUserBankAccountActive(User user, Long id) {
+	public BankAccount setUserBankAccountActive(User user, Long id) throws Exception {
 		// TODO Auto-generated method stub
-		Optional<BankAccount>bankAccountOptional=bankAccountRepository.findByUserAndId(user, id);
-		if(bankAccountOptional.isPresent()) {
-			BankAccount bankAccount=bankAccountOptional.get();
-			bankAccount.setStatus(BankAccount.Status.ACTIVE);
-			return bankAccountRepository.save(bankAccount);
+		BankAccount bankAccount=bankAccountRepository.findByUserAndId(user, id)
+				.orElseThrow(()->new AccountNotFoundException ("Account not found for specific user "+user.getPin()));
+		
+		if(bankAccount.getStatus().equals(BankAccount.Status.ACTIVE)) {
+			throw new Exception("Account is already active");
 		}
-		return null;
+		bankAccount.setStatus(BankAccount.Status.ACTIVE);
+		return bankAccountRepository.save(bankAccount);
+		
 		
 	}
 	public Optional<BankAccount>getBankAccount(Long id){

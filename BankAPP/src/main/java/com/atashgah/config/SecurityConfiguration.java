@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.atashgah.service.CustomUserDetailsService;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfiguration {
 	
 	@Autowired
@@ -34,10 +36,8 @@ public class SecurityConfiguration {
 		http.csrf().disable()
 			.authorizeRequests()
 			
-			.requestMatchers("/api/users/**").permitAll()
-			//.requestMatchers("/api/auth/**").permitAll()
-			.requestMatchers("/api/**").authenticated()
-			
+			.requestMatchers("/api/auth/**", "/register", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+			.anyRequest().authenticated()
 			.and()
 			.sessionManagement()
 			.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

@@ -26,7 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService{
 		 
 	     if(user==null) {
 	    	 throw new UsernameNotFoundException("User not found with PIN: "+pin);
-	     }         
+	     }
 	     return user;
 	}
 	

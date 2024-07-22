@@ -63,7 +63,8 @@ public class UserController {
 			return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
 		}
 		catch(Exception ex) {
-			return new ResponseEntity<>("An error occurred while fetching the user", HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>("After deleting specific user you should delete related bank accounts "
+					+ "and transfers", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
 	}

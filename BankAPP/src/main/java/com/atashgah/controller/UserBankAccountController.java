@@ -26,13 +26,13 @@ public class UserBankAccountController {
 	private UserBankAccountService userBankAccountService;
 	@Autowired
 	private UserService userService;
-	@GetMapping("/{pin}")
+	@GetMapping("/getAll/{pin}")
 	public List<BankAccount> getUserBankAccountsByPin(@PathVariable String pin) throws UserNotFoundException {
 		User user=userService.getUserByPin(pin);
 		return userBankAccountService.getUserBankAccounts(user);
 	}
-	@GetMapping("/{pin}/{id}")
-	public Optional<BankAccount> getUserBankAccountByPin(@PathVariable String pin,@PathVariable Long id) throws UserNotFoundException {
+	@GetMapping("/getOne/{pin}/{id}")
+	public Optional<BankAccount> getUserBankAccountByPin(@PathVariable String pin,@PathVariable Long id) throws Exception {
 		
 		User user=userService.getUserByPin(pin);
 		return userBankAccountService.getUserSpecificBankAccount(user, id);
@@ -43,13 +43,13 @@ public class UserBankAccountController {
 		return userBankAccountService.addBankAccount(user,bankAccount);
 	}
 	
-	@DeleteMapping("{pin}/{id}")
+	@DeleteMapping("/{pin}/{id}")
 	public void deleteUserSpecificBankAccount(@PathVariable String pin,@PathVariable Long id) throws UserNotFoundException {
 		User user=userService.getUserByPin(pin);
 		userBankAccountService.deleteUserBankAccount(user,id);
 	}
-	@PostMapping("{pin}/{id}")
-	public BankAccount setUserSpecificBankAccountActive(@PathVariable String pin,@PathVariable Long id) throws UserNotFoundException {
+	@PostMapping("/setActive/{pin}/{id}")
+	public BankAccount setUserSpecificBankAccountActive(@PathVariable String pin,@PathVariable Long id) throws Exception {
 		User user=userService.getUserByPin(pin);
 		return userBankAccountService.setUserBankAccountActive(user,id);
 	}

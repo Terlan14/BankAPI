@@ -31,8 +31,8 @@ public class User implements UserDetails{
 	public User() {
     }
 	
-	public User(String fin, String firstname, String lastname, String email, String password) {
-        this.pin = fin;
+	public User(String pin, String firstname, String lastname, String email, String password) {
+        this.pin = pin;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
@@ -54,7 +54,7 @@ public class User implements UserDetails{
 	@Size(min = 6, message = "Password must be at least 6 characters")
 	private String password;
 	
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval=true)
 	@JsonManagedReference
 	private Set<BankAccount>bankAccounts;
 
@@ -124,6 +124,10 @@ public class User implements UserDetails{
 	public String getUsername() {
 		// TODO Auto-generated method stub
 		return pin;
+	}
+	
+	public void setUsername(String pin) {
+		this.pin=pin;
 	}
 	
 	

@@ -1,5 +1,7 @@
 package com.atashgah.service;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -7,7 +9,10 @@ import org.springframework.stereotype.Service;
 import com.atashgah.exception.PinSizeException;
 import com.atashgah.exception.UserAlreadyExistsException;
 import com.atashgah.exception.UserNotFoundException;
+import com.atashgah.model.BankAccount;
 import com.atashgah.model.User;
+import com.atashgah.repository.BankAccountRepository;
+import com.atashgah.repository.TransferRepository;
 import com.atashgah.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -17,6 +22,12 @@ public class UserService {
 	
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private TransferRepository transferRepository;
+	
+	@Autowired
+	private BankAccountRepository bankAccountRepository;
 
 	public User registerUser(User user) throws UserAlreadyExistsException {
 		// TODO Auto-generated method stub
@@ -52,6 +63,8 @@ public class UserService {
 		if(user==null) {
 			throw new UserNotFoundException("User not found with pin: "+pin);
 		}
+		
+		
 		userRepository.deleteByPin(pin);
 		
 

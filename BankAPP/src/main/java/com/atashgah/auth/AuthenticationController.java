@@ -1,5 +1,8 @@
 package com.atashgah.auth;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,11 +41,12 @@ public class AuthenticationController {
             return ResponseEntity.status(401).body("Incorrect PIN or password");
         }
 		final UserDetails userDetails=userDetailsService.loadUserByUsername(authenticationRequest.getPin());
-		final String jwt=jwtService.generateToken(userDetails.getUsername());
 		
+		final String jwt=jwtService.generateToken(userDetails.getUsername());
 		User user=(User)userDetails;
 		AuthenticationResponse response=new AuthenticationResponse(jwt,user);
 		return ResponseEntity.ok(response);
 	}
+	
 
 }
