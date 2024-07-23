@@ -1,14 +1,12 @@
 package com.atashgah.config;
 
 import java.security.Key;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.crypto.SecretKey;
-
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -55,6 +53,7 @@ public class JwtService {
 	}
 	public boolean isTokenValid(String token,UserDetails userDetails) {
 		final String username=extractUsername(token);
+		System.out.println("USERNAME IS "+username);
 		return (username).equals(userDetails.getUsername()) && !isTokenExpired(token);
 	}
 	

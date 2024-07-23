@@ -3,6 +3,10 @@ package com.atashgah.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,10 +15,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.atashgah.auth.RegisterResponse;
+import com.atashgah.config.JwtService;
 import com.atashgah.exception.PinSizeException;
 import com.atashgah.exception.UserAlreadyExistsException;
 import com.atashgah.exception.UserNotFoundException;
 import com.atashgah.model.User;
+import com.atashgah.service.CustomUserDetailsService;
 import com.atashgah.service.UserService;
 
 import jakarta.validation.Valid;
@@ -25,11 +32,27 @@ public class UserController {
 	
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private CustomUserDetailsService userDetailsService;
+	
+	@Autowired
+    private JwtService jwtService;
+	
+	@Autowired
+    private AuthenticationManager authenticationManager;
+
 	@PostMapping("/register")
-	public ResponseEntity<String> register(@Valid @RequestBody User user) {
+	public ResponseEntity<?> register(@Valid @RequestBody User user) {
 		try {
+			
 			userService.registerUser(user);
-			return new ResponseEntity<>("User registered successfully",HttpStatus.OK);
+			final UserDetails userDetails=userDetailsService.loadUserByUsername(user.getPin());
+			final String jwt=jwtService.generateToken(userDetails.getUsername());
+			RegisterResponse response=new RegisterResponse(jwt,"User registered successfully");
+			
+			
+			return ResponseEntity.ok(response);
 		} 
 		catch(UserAlreadyExistsException ex){
 			return new ResponseEntity<>(ex.getMessage(),HttpStatus.CONFLICT);

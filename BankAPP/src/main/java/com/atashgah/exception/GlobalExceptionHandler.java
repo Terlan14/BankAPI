@@ -36,17 +36,22 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PinSizeException.class)
     public ResponseEntity<String> handlePinSizeException(PinSizeException ex) {
         logger.error("PinSizeException: " + ex.getMessage(), ex);
-        return new ResponseEntity<>("An error occurred during the transfer", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>("Pin should be only 7 characters ", HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
         logger.error("RuntimeException: " + ex.getMessage(), ex);
-        return new ResponseEntity<>("An error occurred during the transfer", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>("An error occurred during the process", HttpStatus.INTERNAL_SERVER_ERROR);
     }
     @ExceptionHandler(AccountDeactiveException.class)
-    public ResponseEntity<String> handleAccountDeactiveException(RuntimeException ex) {
+    public ResponseEntity<String> handleAccountDeactiveException(AccountDeactiveException ex) {
         logger.error("AccountDeactiveException: " + ex.getMessage(), ex);
         return new ResponseEntity<>("Both account should be active", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    @ExceptionHandler(AccountAlreadyActiveException.class)
+    public ResponseEntity<String> handleAlreadyActive(AccountAlreadyActiveException ex) {
+        logger.error("RuntimeException: " + ex.getMessage(), ex);
+        return new ResponseEntity<>("Specific user has been activated before ", HttpStatus.FOUND);
     }
 }
