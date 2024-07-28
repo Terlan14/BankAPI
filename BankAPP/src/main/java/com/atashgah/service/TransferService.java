@@ -1,16 +1,20 @@
 package com.atashgah.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.atashgah.dto.TransferDTO;
+import com.atashgah.dto.TransferMapper;
 import com.atashgah.exception.AccountDeactiveException;
 import com.atashgah.exception.AccountNotFoundException;
 import com.atashgah.exception.InsufficientBalanceException;
 import com.atashgah.exception.UserNotFoundException;
+import com.atashgah.exception.ZeroOrNegativeTransferException;
 import com.atashgah.model.BankAccount;
 import com.atashgah.model.BankAccount.Status;
 import com.atashgah.model.Transfer;
@@ -32,12 +36,15 @@ public class TransferService {
 	@Autowired
 	UserBankAccountService userBankAccountService;
 
-	public void transferBetweenUserAccounts(User user, Long senderAccountId, Long receiverAccountId,Double amount) throws InsufficientBalanceException, UserNotFoundException {
+	public void transferBetweenUserAccounts(User user, Long senderAccountId, Long receiverAccountId,Double amount) throws InsufficientBalanceException, UserNotFoundException, ZeroOrNegativeTransferException {
 		// TODO Auto-generated method stub
 		BankAccount senderAccount = bankAccountRepository.findByUserAndId(user,senderAccountId)
                 .orElseThrow(() -> new AccountNotFoundException ("Sender account not found"));
         BankAccount receiverAccount = bankAccountRepository.findByUserAndId(user,receiverAccountId)
                 .orElseThrow(() -> new AccountNotFoundException ("Receiver account not found"));
+        if(amount<=0) {
+        	throw new ZeroOrNegativeTransferException("transfers can't be 0 or minus");
+        }
             if(senderAccount.getStatus()==Status.ACTIVE && receiverAccount.getStatus()==Status.ACTIVE) {
             	if (senderAccount.getBalance() >= amount) {
             		senderAccount.setBalance(senderAccount.getBalance() - amount);
@@ -66,27 +73,33 @@ public class TransferService {
 
 }
 
-	public List<Transfer> getTransferToUser(User user) {
+	public List<TransferDTO> getTransferToUser(User user) {
 		// TODO Auto-generated method stub
-		return transferRepository.findByToAccount_User(user);
+		List<Transfer>transfer= transferRepository.findByToAccount_User(user);
+		return TransferMapper.toTransferDTO(transfer);
 	}
-	public List<Transfer> getTransferFromUser(User user) {
+	public List<TransferDTO> getTransferFromUser(User user) {
 		// TODO Auto-generated method stub
-		return transferRepository.findByFromAccount_User(user);
+		List<Transfer>transfer= transferRepository.findByFromAccount_User(user);
+		return TransferMapper.toTransferDTO(transfer);
 	}
-	public List<Transfer>getAllTransfers(User user){
+	public List<TransferDTO>getAllTransfers(User user){
 		List<Transfer>sentTransfers=transferRepository.findByFromAccount_User(user);
 		List<Transfer>receivedTransfers=transferRepository.findByToAccount_User(user);
 		sentTransfers.addAll(receivedTransfers);
-		return sentTransfers;
+		List<TransferDTO>result=TransferMapper.toTransferDTO(sentTransfers);
+		return result;
 	}
 
-	public void transferFromAccounntToAccount(Long senderAccountId, Long receiverAccountId, double amount) throws InsufficientBalanceException  {
+	public void transferFromAccounntToAccount(Long senderAccountId, Long receiverAccountId, double amount) throws InsufficientBalanceException, ZeroOrNegativeTransferException  {
 		// TODO Auto-generated method stub
 		BankAccount senderAccount = bankAccountRepository.findById(senderAccountId)
                 .orElseThrow(() -> new AccountNotFoundException ("Sender account not found"));
         BankAccount receiverAccount = bankAccountRepository.findById(receiverAccountId)
                 .orElseThrow(() -> new AccountNotFoundException ("Receiver account not found"));
+        if(amount<=0) {
+        	throw new ZeroOrNegativeTransferException("transfers can't be 0 or minus");
+        }
 		
         if(senderAccount.getStatus()!=Status.ACTIVE || receiverAccount.getStatus()!=Status.ACTIVE ) {
         	throw new AccountDeactiveException("Both account should be active");

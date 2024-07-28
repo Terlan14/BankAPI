@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.atashgah.auth.RegisterResponse;
 import com.atashgah.config.JwtService;
+import com.atashgah.dto.UserDTO;
+import com.atashgah.dto.UserRegistrationDTO;
 import com.atashgah.exception.PinSizeException;
 import com.atashgah.exception.UserAlreadyExistsException;
 import com.atashgah.exception.UserNotFoundException;
@@ -43,7 +43,7 @@ public class UserController {
     private AuthenticationManager authenticationManager;
 
 	@PostMapping("/register")
-	public ResponseEntity<?> register(@Valid @RequestBody User user) {
+	public ResponseEntity<?> register(@Valid @RequestBody UserRegistrationDTO user) {
 		try {
 			
 			userService.registerUser(user);
@@ -68,7 +68,8 @@ public class UserController {
 	public ResponseEntity<?> getUserByPin(@PathVariable String pin) {
         try {
             User user = userService.getUserByPin(pin);
-            return new ResponseEntity<>(user, HttpStatus.OK);
+            UserDTO userDTO=new UserDTO(user.getId(), user.getFirstname(), user.getLastname(), user.getPin(), user.getEmail());
+            return new ResponseEntity<>(userDTO, HttpStatus.OK);
         } catch (UserNotFoundException ex) {
             return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception ex) {

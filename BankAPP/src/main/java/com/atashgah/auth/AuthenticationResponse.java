@@ -1,13 +1,13 @@
 package com.atashgah.auth;
 
-import com.atashgah.model.User;
+import com.atashgah.dto.UserLoginResponse;
 
 public class AuthenticationResponse {
 	
 	private String jwt;
-	private User user;
+	private UserLoginResponse user;
 
-	public AuthenticationResponse(String jwt, User user) {
+	public AuthenticationResponse(String jwt, UserLoginResponse user) {
 		
 		this.jwt = jwt;
 		this.user = user;
@@ -19,10 +19,10 @@ public class AuthenticationResponse {
 	public void setJwt(String jwt) {
 		this.jwt = jwt;
 	}
-	public User getUser() {
+	public UserLoginResponse getUser() {
 		return user;
 	}
-	public void setUser(User user) {
+	public void setUser(UserLoginResponse user) {
 		this.user = user;
 	}
 	

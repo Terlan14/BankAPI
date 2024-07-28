@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.atashgah.config.JwtService;
+import com.atashgah.dto.UserLoginResponse;
+import com.atashgah.dto.UserMapper;
+import com.atashgah.dto.UserRegistrationDTO;
 import com.atashgah.model.User;
 import com.atashgah.service.CustomUserDetailsService;
 
@@ -33,19 +36,12 @@ public class AuthenticationController {
     private JwtService jwtService;
 	
 	@PostMapping("/login")
-	public ResponseEntity<?>createAuthenticationToken(@RequestHeader(value="Authorization",required=false) String token,@RequestBody AuthenticationRequest authenticationRequest){
+	public ResponseEntity<?>createAuthenticationToken (@RequestBody AuthenticationRequest authenticationRequest){
 		
 		final UserDetails userDetails=userDetailsService.loadUserByUsername(authenticationRequest.getPin());
 		
-		final String userJwt=jwtService.generateToken(userDetails.getUsername());
-		String pin=null;
-		if(token!=null &&token.startsWith("Bearer ")) {
-			String jwt=token.substring(7);
-			pin=jwtService.extractUsername(jwt);
-		}
-		if(!authenticationRequest.getPin().equals(pin)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token or credentials");
-		}
+		final String userJwt=jwtService.generateToken(authenticationRequest.getPin());
+		
 		try {
              Authentication authentication=authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getPin(), authenticationRequest.getPassword())
@@ -56,7 +52,8 @@ public class AuthenticationController {
         }
 		
 		User user=(User)userDetails;
-		AuthenticationResponse response=new AuthenticationResponse(userJwt,user);
+		UserLoginResponse result=UserMapper.toLoginResponse(user);
+		AuthenticationResponse response=new AuthenticationResponse(userJwt,result);
 		return ResponseEntity.ok(response);
 	}
 	

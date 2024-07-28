@@ -6,8 +6,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.atashgah.dto.BankDTO;
+import com.atashgah.dto.BankMapper;
 import com.atashgah.exception.AccountAlreadyActiveException;
-import com.atashgah.exception.AccountDeactiveException;
 import com.atashgah.exception.AccountNotFoundException;
 import com.atashgah.model.BankAccount;
 import com.atashgah.model.BankAccount.Status;
@@ -20,23 +21,24 @@ public class UserBankAccountService {
 	@Autowired
 	private BankAccountRepository bankAccountRepository;
 
-	public List<BankAccount> getUserBankAccounts(User user) {
-        return bankAccountRepository.findByUser(user);
+	public List<BankDTO> getUserBankAccounts(User user) {
+        List<BankAccount>bankAccount = bankAccountRepository.findByUser(user);
+        return BankMapper.toBankDTOList(bankAccount);
     }
-	public Optional<BankAccount> getUserSpecificBankAccount(User user, Long accountId) throws Exception {
+	public Optional<BankDTO> getUserSpecificBankAccount(User user, Long accountId) throws Exception {
 		bankAccountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException ("Account not found for any user"));
 		BankAccount account = bankAccountRepository.findByUserAndId(user,accountId)
                 .orElseThrow(() -> new AccountNotFoundException ("Account not found for specific user "+user.getPin()));
 		
-        return Optional.of(account);
+        return Optional.ofNullable(BankMapper.toBankDTO(account));
     }
-	public BankAccount addBankAccount(User user, BankAccount bankAccount) {
+	public BankDTO addBankAccount(User user, BankDTO bankDTO) {
 		// TODO Auto-generated method stub
+		BankAccount bankAccount=new BankAccount();
 		bankAccount.setUser(user);
-		bankAccount.setBalance(300.00);
-		System.out.println("Initial balance : "+bankAccount.getBalance());
-		return bankAccountRepository.save(bankAccount);
+		bankAccountRepository.save(bankAccount);
+		return BankMapper.toBankDTO(bankAccount);
 	}
 	public void deleteUserBankAccount(User user, Long id) {
 		
@@ -46,7 +48,7 @@ public class UserBankAccountService {
         
 		
 	}
-	public BankAccount setUserBankAccountActive(User user, Long id) throws Exception {
+	public BankDTO setUserBankAccountActive(User user, Long id) throws Exception {
 		// TODO Auto-generated method stub
 		BankAccount bankAccount=bankAccountRepository.findByUserAndId(user, id)
 				.orElseThrow(()->new AccountNotFoundException ("Account not found for specific user "+user.getPin()));
@@ -54,18 +56,21 @@ public class UserBankAccountService {
 		if(bankAccount.getStatus().equals(BankAccount.Status.ACTIVE)) {
 			throw new AccountAlreadyActiveException("Account is already active");
 		}
+		
 		bankAccount.setStatus(BankAccount.Status.ACTIVE);
-		return bankAccountRepository.save(bankAccount);
+		bankAccountRepository.save(bankAccount);
+		return BankMapper.toBankDTO(bankAccount);
 		
 		
 	}
 	public Optional<BankAccount>getBankAccount(Long id){
 		return bankAccountRepository.findById(id);
 	}
-	public List<BankAccount> getUserActiveBankAccounts(User user) {
+	public List<BankDTO> getUserActiveBankAccounts(User user) {
 		// TODO Auto-generated method stub
 		
-		return bankAccountRepository.findByUserAndStatus(user, Status.ACTIVE);
+		List<BankAccount>bankAccount= bankAccountRepository.findByUserAndStatus(user, Status.ACTIVE);
+		return BankMapper.toBankDTOList(bankAccount);
 	}
 	
 	

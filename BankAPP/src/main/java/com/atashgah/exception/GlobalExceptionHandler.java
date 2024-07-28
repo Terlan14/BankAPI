@@ -3,6 +3,7 @@ package com.atashgah.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -33,17 +34,24 @@ public class GlobalExceptionHandler {
         logger.error("UseNotFoundException: " + ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler({IllegalArgumentException.class})
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        logger.error("IllegalArgumentException: " + ex.getMessage());
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler({ZeroOrNegativeTransferException.class})
+    public ResponseEntity<String>handleZeroOrNegativeTransferException(ZeroOrNegativeTransferException ex){
+    	logger.error("ZeroOrNegativeTransfer: "+ex.getMessage());
+    	return new ResponseEntity<String>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+    
     @ExceptionHandler(PinSizeException.class)
     public ResponseEntity<String> handlePinSizeException(PinSizeException ex) {
         logger.error("PinSizeException: " + ex.getMessage(), ex);
         return new ResponseEntity<>("Pin should be only 7 characters ", HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        logger.error("RuntimeException: " + ex.getMessage(), ex);
-        return new ResponseEntity<>("An error occurred during the process", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    
     @ExceptionHandler(AccountDeactiveException.class)
     public ResponseEntity<String> handleAccountDeactiveException(AccountDeactiveException ex) {
         logger.error("AccountDeactiveException: " + ex.getMessage(), ex);
